@@ -1,0 +1,5218 @@
+{
+  "datasets": [
+    {
+      "name": "restaurant_performance",
+      "displayName": "Restaurant Performance",
+      "config": {
+        "version": "1.1",
+        "source": "SELECT \n  p.restaurant_id,\n  r.restaurant_name,\n  p.total_orders,\n  p.revenue,\n  p.aov,\n  p.unique_customers,\n  p.delivery_orders,\n  p.eat_in_orders,\n  p.avg_rating,\n  p.gross_margin,\n  p.delivery_share_pct,\n  p.gross_margin_pct\nFROM restaurant_dev.gold.agg_restaurant_performance p LEFT JOIN restaurant_dev.gold.dim_restaurant r \n  ON p.restaurant_id = r.restaurant_id\n",
+        "dimensions": [
+          {
+            "name": "restaurant_id",
+            "expr": "restaurant_id",
+            "displayName": "Restaurant ID"
+          },
+          {
+            "name": "restaurant_name",
+            "expr": "restaurant_name",
+            "displayName": "Restaurant Name"
+          }
+        ],
+        "measures": [
+          {
+            "name": "revenue",
+            "expr": "SUM(revenue)",
+            "displayName": "Revenue",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "total_orders",
+            "expr": "SUM(total_orders)",
+            "displayName": "Total Orders"
+          },
+          {
+            "name": "aov",
+            "expr": "AVG(aov)",
+            "displayName": "Average Order Value",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "name": "unique_customers",
+            "expr": "SUM(unique_customers)",
+            "displayName": "Unique Customers"
+          },
+          {
+            "name": "avg_rating",
+            "expr": "AVG(avg_rating)",
+            "displayName": "Average Rating",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "hourly_demand",
+      "displayName": "Hourly Demand",
+      "config": {
+        "version": "1.1",
+        "source": "restaurant_dev.gold.agg_hourly_demand",
+        "dimensions": [
+          {
+            "name": "day_of_week",
+            "expr": "day_of_week",
+            "displayName": "Day of Week"
+          },
+          {
+            "name": "hour_of_day",
+            "expr": "hour_of_day",
+            "displayName": "Hour of Day"
+          }
+        ],
+        "measures": [
+          {
+            "name": "orders",
+            "expr": "SUM(orders)",
+            "displayName": "Orders"
+          },
+          {
+            "name": "revenue",
+            "expr": "SUM(revenue)",
+            "displayName": "Revenue",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "monthly_revenue",
+      "displayName": "Monthly Revenue",
+      "config": {
+        "version": "1.1",
+        "source": "SELECT \n  year_month,\n  EXTRACT(YEAR FROM TO_DATE(year_month, 'yyyy-MM')) as year,\n  EXTRACT(MONTH FROM TO_DATE(year_month, 'yyyy-MM')) as month,\n  revenue,\n  total_orders,\n  unique_customers,\n  aov,\n  gross_margin_pct\nFROM restaurant_dev.gold.agg_revenue_monthly\n",
+        "dimensions": [
+          {
+            "name": "year_month",
+            "expr": "year_month",
+            "displayName": "Year-Month"
+          },
+          {
+            "name": "year",
+            "expr": "year",
+            "displayName": "Year"
+          },
+          {
+            "name": "month",
+            "expr": "month",
+            "displayName": "Month"
+          }
+        ],
+        "measures": [
+          {
+            "name": "revenue",
+            "expr": "SUM(revenue)",
+            "displayName": "Revenue",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "revenue_prev_year",
+            "expr": "SUM(CASE \n  WHEN year = YEAR(CURRENT_DATE) - 1 \n  THEN revenue \n  ELSE 0 \nEND)\n",
+            "displayName": "Revenue (Prior Year)",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "total_orders",
+            "expr": "SUM(total_orders)",
+            "displayName": "Total Orders"
+          },
+          {
+            "name": "total_orders_prev_year",
+            "expr": "SUM(CASE \n  WHEN year = YEAR(CURRENT_DATE) - 1 \n  THEN total_orders \n  ELSE 0 \nEND)\n",
+            "displayName": "Total Orders (Prior Year)"
+          },
+          {
+            "name": "unique_customers",
+            "expr": "SUM(unique_customers)",
+            "displayName": "Unique Customers"
+          },
+          {
+            "name": "unique_customers_prev_year",
+            "expr": "SUM(CASE \n  WHEN year = YEAR(CURRENT_DATE) - 1 \n  THEN unique_customers \n  ELSE 0 \nEND)\n",
+            "displayName": "Unique Customers (Prior Year)"
+          },
+          {
+            "name": "aov",
+            "expr": "SUM(revenue) / SUM(total_orders)",
+            "displayName": "Average Order Value",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "name": "aov_prev_year",
+            "expr": "SUM(CASE WHEN year = YEAR(CURRENT_DATE) - 1 THEN revenue ELSE 0 END) / \nNULLIF(SUM(CASE WHEN year = YEAR(CURRENT_DATE) - 1 THEN total_orders ELSE 0 END), 0)\n",
+            "displayName": "AOV (Prior Year)",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "name": "gross_margin_pct",
+            "expr": "AVG(gross_margin_pct)",
+            "displayName": "Gross Margin %",
+            "format": {
+              "type": "percentage",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "daily_ops",
+      "displayName": "Daily Operations",
+      "config": {
+        "version": "1.1",
+        "source": "restaurant_dev.gold.fct_daily_ops",
+        "dimensions": [
+          {
+            "name": "date",
+            "expr": "`date`",
+            "displayName": "Date"
+          },
+          {
+            "name": "restaurant_id",
+            "expr": "`restaurant_id`",
+            "displayName": "Restaurant ID"
+          },
+          {
+            "name": "year_month",
+            "expr": "`year_month`",
+            "displayName": "Year Month"
+          }
+        ],
+        "measures": [
+          {
+            "name": "total_customers",
+            "expr": "SUM(`total_customers`)",
+            "displayName": "Total Customers"
+          },
+          {
+            "name": "total_orders",
+            "expr": "SUM(`total_orders`)",
+            "displayName": "Total Orders"
+          },
+          {
+            "name": "avg_wait_time",
+            "expr": "AVG(`average_wait_time_mins`)",
+            "displayName": "Avg Wait Time (min)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "total_staff",
+            "expr": "SUM(`staff_on_shift`)",
+            "displayName": "Staff Count"
+          },
+          {
+            "name": "daily_revenue",
+            "expr": "SUM(`daily_revenue`)",
+            "displayName": "Revenue",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "total_operating_cost",
+            "expr": "SUM(`total_operating_cost`)",
+            "displayName": "Operating Cost",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "sales_by_restaurant",
+      "displayName": "Sales by Restaurant",
+      "config": {
+        "version": "1.1",
+        "source": "SELECT \n  r.restaurant_name,\n  p.revenue,\n  p.total_orders,\n  p.unique_customers,\n  p.gross_margin\nFROM restaurant_dev.gold.agg_restaurant_performance p INNER JOIN restaurant_dev.gold.dim_restaurant r \n  ON p.restaurant_id = r.restaurant_id\n",
+        "dimensions": [
+          {
+            "name": "restaurant_name",
+            "expr": "`restaurant_name`",
+            "displayName": "Restaurant"
+          }
+        ],
+        "measures": [
+          {
+            "name": "revenue",
+            "expr": "SUM(`revenue`)",
+            "displayName": "Revenue",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "total_orders",
+            "expr": "SUM(`total_orders`)",
+            "displayName": "Orders"
+          },
+          {
+            "name": "unique_customers",
+            "expr": "SUM(`unique_customers`)",
+            "displayName": "Customers"
+          },
+          {
+            "name": "gross_margin",
+            "expr": "SUM(`gross_margin`)",
+            "displayName": "Gross Margin",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "order_details",
+      "displayName": "Order Details",
+      "config": {
+        "version": "1.1",
+        "source": "restaurant_dev.gold.fct_orders",
+        "dimensions": [
+          {
+            "name": "order_date",
+            "expr": "`order_date`",
+            "displayName": "Order Date"
+          },
+          {
+            "name": "payment_method",
+            "expr": "`payment_method`",
+            "displayName": "Payment Method"
+          },
+          {
+            "name": "order_id",
+            "expr": "`order_id`",
+            "displayName": "Order ID"
+          },
+          {
+            "name": "year_month",
+            "expr": "`year_month`",
+            "displayName": "Year Month"
+          }
+        ],
+        "measures": [
+          {
+            "name": "revenue",
+            "expr": "SUM(`total_amount`)",
+            "displayName": "Revenue",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "name": "orders",
+            "expr": "COUNT(DISTINCT `order_id`)",
+            "displayName": "Orders"
+          }
+        ]
+      }
+    },
+    {
+      "name": "sales_by_category",
+      "displayName": "Sales by Category",
+      "config": {
+        "version": "1.1",
+        "source": "restaurant_dev.gold.agg_revenue_by_category",
+        "dimensions": [
+          {
+            "name": "category",
+            "expr": "`category`",
+            "displayName": "Category"
+          },
+          {
+            "name": "sub_category",
+            "expr": "`sub_category`",
+            "displayName": "Sub Category"
+          }
+        ],
+        "measures": [
+          {
+            "name": "revenue",
+            "expr": "SUM(`revenue`)",
+            "displayName": "Revenue",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "units_sold",
+            "expr": "SUM(`units_sold`)",
+            "displayName": "Units Sold"
+          },
+          {
+            "name": "margin",
+            "expr": "SUM(`margin`)",
+            "displayName": "Margin",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "sales_monthly",
+      "displayName": "Sales Monthly Trends",
+      "config": {
+        "version": "1.1",
+        "source": "restaurant_dev.gold.agg_revenue_monthly",
+        "dimensions": [
+          {
+            "name": "year_month",
+            "expr": "`year_month`",
+            "displayName": "Month"
+          },
+          {
+            "name": "year",
+            "expr": "`year`",
+            "displayName": "Year"
+          },
+          {
+            "name": "month",
+            "expr": "`month`",
+            "displayName": "Month Number"
+          }
+        ],
+        "measures": [
+          {
+            "name": "revenue",
+            "expr": "SUM(`revenue`)",
+            "displayName": "Revenue",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "total_orders",
+            "expr": "SUM(`total_orders`)",
+            "displayName": "Total Orders"
+          },
+          {
+            "name": "unique_customers",
+            "expr": "SUM(`unique_customers`)",
+            "displayName": "Unique Customers"
+          }
+        ]
+      }
+    },
+    {
+      "name": "customer_cohorts",
+      "displayName": "Customer Cohorts",
+      "config": {
+        "version": "1.1",
+        "source": "restaurant_dev.gold.agg_customer_cohorts",
+        "dimensions": [
+          {
+            "name": "cohort_month",
+            "expr": "`cohort_month`",
+            "displayName": "Cohort Month"
+          },
+          {
+            "name": "order_month",
+            "expr": "`order_month`",
+            "displayName": "Order Month"
+          },
+          {
+            "name": "months_since_join",
+            "expr": "`months_since_join`",
+            "displayName": "Months Since Join"
+          }
+        ],
+        "measures": [
+          {
+            "name": "active_customers",
+            "expr": "SUM(`active_customers`)",
+            "displayName": "Active Customers"
+          }
+        ]
+      }
+    },
+    {
+      "name": "customer_lifetime",
+      "displayName": "Customer Lifetime Value",
+      "config": {
+        "version": "1.1",
+        "source": "restaurant_dev.gold.agg_customer_lifetime",
+        "dimensions": [
+          {
+            "name": "customer_segment",
+            "expr": "`customer_segment`",
+            "displayName": "Segment"
+          },
+          {
+            "name": "rfm_segment",
+            "expr": "`rfm_segment`",
+            "displayName": "RFM Segment"
+          }
+        ],
+        "measures": [
+          {
+            "name": "customers",
+            "expr": "SUM(`customers`)",
+            "displayName": "Customers"
+          },
+          {
+            "name": "avg_orders",
+            "expr": "AVG(`avg_orders`)",
+            "displayName": "Avg Orders",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          },
+          {
+            "name": "avg_spend",
+            "expr": "AVG(`avg_spend`)",
+            "displayName": "Avg Spend",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "avg_clv",
+            "expr": "AVG(`avg_clv`)",
+            "displayName": "Avg CLV",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "total_clv",
+            "expr": "SUM(`total_clv`)",
+            "displayName": "Total CLV",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "customer_dimension",
+      "displayName": "Customer Dimension",
+      "config": {
+        "version": "1.1",
+        "source": "restaurant_dev.gold.dim_customer",
+        "dimensions": [
+          {
+            "name": "customer_id",
+            "expr": "`customer_id`",
+            "displayName": "Customer ID"
+          },
+          {
+            "name": "full_name",
+            "expr": "`full_name`",
+            "displayName": "Customer Name"
+          },
+          {
+            "name": "customer_segment",
+            "expr": "`customer_segment`",
+            "displayName": "Segment"
+          },
+          {
+            "name": "rfm_segment",
+            "expr": "`rfm_segment`",
+            "displayName": "RFM Segment"
+          },
+          {
+            "name": "join_date",
+            "expr": "`join_date`",
+            "displayName": "Join Date"
+          },
+          {
+            "name": "preferred_category",
+            "expr": "`preferred_category`",
+            "displayName": "Preferred Category"
+          }
+        ],
+        "measures": [
+          {
+            "name": "total_orders",
+            "expr": "SUM(`total_orders`)",
+            "displayName": "Total Orders"
+          },
+          {
+            "name": "total_spent",
+            "expr": "SUM(`total_spent`)",
+            "displayName": "Total Spent",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "customer_lifetime_value",
+            "expr": "SUM(`customer_lifetime_value`)",
+            "displayName": "CLV",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "avg_order_value",
+            "expr": "AVG(`avg_order_value`)",
+            "displayName": "Avg Order Value",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "name": "customers",
+            "expr": "COUNT(DISTINCT `customer_id`)",
+            "displayName": "Customer Count"
+          }
+        ]
+      }
+    },
+    {
+      "name": "menu_engineering",
+      "displayName": "Menu Engineering Matrix",
+      "config": {
+        "version": "1.1",
+        "source": "restaurant_dev.gold.agg_menu_engineering",
+        "dimensions": [
+          {
+            "name": "item_name",
+            "expr": "`item_name`",
+            "displayName": "Item Name"
+          },
+          {
+            "name": "category",
+            "expr": "`category`",
+            "displayName": "Category"
+          },
+          {
+            "name": "classification",
+            "expr": "`classification`",
+            "displayName": "Classification"
+          },
+          {
+            "name": "popularity",
+            "expr": "`popularity`",
+            "displayName": "Popularity"
+          },
+          {
+            "name": "profitability",
+            "expr": "`profitability`",
+            "displayName": "Profitability"
+          }
+        ],
+        "measures": [
+          {
+            "name": "units_sold",
+            "expr": "SUM(`units_sold`)",
+            "displayName": "Units Sold"
+          },
+          {
+            "name": "revenue",
+            "expr": "SUM(`revenue`)",
+            "displayName": "Revenue",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "margin_pct",
+            "expr": "AVG(`margin_pct`)",
+            "displayName": "Margin %",
+            "format": {
+              "type": "percentage",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          },
+          {
+            "name": "gross_margin_pct",
+            "expr": "AVG(`gross_margin_pct`)",
+            "displayName": "Gross Margin %",
+            "format": {
+              "type": "percentage",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "menu_items",
+      "displayName": "Menu Items",
+      "config": {
+        "version": "1.1",
+        "source": "restaurant_dev.gold.dim_menu_item",
+        "dimensions": [
+          {
+            "name": "item_id",
+            "expr": "`item_id`",
+            "displayName": "Item ID"
+          },
+          {
+            "name": "item_name",
+            "expr": "`item_name`",
+            "displayName": "Item Name"
+          },
+          {
+            "name": "category",
+            "expr": "`category`",
+            "displayName": "Category"
+          },
+          {
+            "name": "sub_category",
+            "expr": "`sub_category`",
+            "displayName": "Sub Category"
+          },
+          {
+            "name": "is_vegetarian",
+            "expr": "`is_vegetarian`",
+            "displayName": "Vegetarian"
+          },
+          {
+            "name": "dietary_flags",
+            "expr": "`dietary_flags`",
+            "displayName": "Dietary Flags"
+          }
+        ],
+        "measures": [
+          {
+            "name": "price",
+            "expr": "AVG(`price`)",
+            "displayName": "Avg Price",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "name": "cost_to_make",
+            "expr": "AVG(`cost_to_make`)",
+            "displayName": "Avg Cost",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "name": "gross_margin_pct",
+            "expr": "AVG(`gross_margin_pct`)",
+            "displayName": "Avg Margin %",
+            "format": {
+              "type": "percentage",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          },
+          {
+            "name": "active_items",
+            "expr": "COUNT(DISTINCT `item_id`)",
+            "displayName": "Active Items"
+          }
+        ]
+      }
+    },
+    {
+      "name": "item_performance",
+      "displayName": "Item Performance",
+      "config": {
+        "version": "1.1",
+        "source": "SELECT \n  p.item_id,\n  m.item_name,\n  p.category,\n  p.sub_category,\n  p.units_sold,\n  p.times_ordered,\n  p.revenue,\n  p.margin,\n  p.avg_price,\n  p.margin_pct\nFROM restaurant_dev.gold.agg_item_performance p LEFT JOIN restaurant_dev.gold.dim_menu_item m \n  ON p.item_id = m.item_id\n",
+        "dimensions": [
+          {
+            "name": "item_id",
+            "expr": "`item_id`",
+            "displayName": "Item ID"
+          },
+          {
+            "name": "item_name",
+            "expr": "`item_name`",
+            "displayName": "Item Name"
+          },
+          {
+            "name": "category",
+            "expr": "`category`",
+            "displayName": "Category"
+          },
+          {
+            "name": "sub_category",
+            "expr": "`sub_category`",
+            "displayName": "Sub Category"
+          }
+        ],
+        "measures": [
+          {
+            "name": "units_sold",
+            "expr": "SUM(`units_sold`)",
+            "displayName": "Units Sold"
+          },
+          {
+            "name": "times_ordered",
+            "expr": "SUM(`times_ordered`)",
+            "displayName": "Times Ordered"
+          },
+          {
+            "name": "revenue",
+            "expr": "SUM(`revenue`)",
+            "displayName": "Revenue",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "margin",
+            "expr": "SUM(`margin`)",
+            "displayName": "Margin",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "avg_price",
+            "expr": "AVG(`avg_price`)",
+            "displayName": "Avg Price",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "name": "margin_pct",
+            "expr": "AVG(`margin_pct`)",
+            "displayName": "Margin %",
+            "format": {
+              "type": "percentage",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "staffing",
+      "displayName": "Staffing Efficiency",
+      "config": {
+        "version": "1.1",
+        "source": "restaurant_dev.gold.agg_staffing_efficiency",
+        "dimensions": [
+          {
+            "name": "restaurant_id",
+            "expr": "`restaurant_id`",
+            "displayName": "Restaurant ID"
+          },
+          {
+            "name": "position",
+            "expr": "`position`",
+            "displayName": "Position"
+          }
+        ],
+        "measures": [
+          {
+            "name": "headcount",
+            "expr": "SUM(`headcount`)",
+            "displayName": "Total Headcount"
+          },
+          {
+            "name": "active_headcount",
+            "expr": "SUM(`active_headcount`)",
+            "displayName": "Active Headcount"
+          },
+          {
+            "name": "left_headcount",
+            "expr": "SUM(`left_headcount`)",
+            "displayName": "Left Headcount"
+          },
+          {
+            "name": "avg_hourly_rate",
+            "expr": "AVG(`avg_hourly_rate`)",
+            "displayName": "Avg Hourly Rate",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "name": "avg_rating",
+            "expr": "AVG(`avg_rating`)",
+            "displayName": "Avg Rating",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          },
+          {
+            "name": "weekly_payroll",
+            "expr": "SUM(`weekly_payroll`)",
+            "displayName": "Weekly Payroll",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "turnover_pct",
+            "expr": "AVG(`turnover_pct`)",
+            "displayName": "Turnover %",
+            "format": {
+              "type": "percentage",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "inventory",
+      "displayName": "Inventory Daily",
+      "config": {
+        "version": "1.1",
+        "source": "restaurant_dev.gold.fct_inventory_daily",
+        "dimensions": [
+          {
+            "name": "date",
+            "expr": "`date`",
+            "displayName": "Date"
+          },
+          {
+            "name": "restaurant_id",
+            "expr": "`restaurant_id`",
+            "displayName": "Restaurant ID"
+          },
+          {
+            "name": "item_id",
+            "expr": "`item_id`",
+            "displayName": "Item ID"
+          },
+          {
+            "name": "year_month",
+            "expr": "`year_month`",
+            "displayName": "Year Month"
+          }
+        ],
+        "measures": [
+          {
+            "name": "stock_value",
+            "expr": "SUM(`stock_value`)",
+            "displayName": "Stock Value",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "waste_value",
+            "expr": "SUM(`waste_value`)",
+            "displayName": "Waste Value",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "avg_waste_pct",
+            "expr": "AVG(`waste_pct`)",
+            "displayName": "Waste %",
+            "format": {
+              "type": "percentage",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          },
+          {
+            "name": "total_waste_stock",
+            "expr": "SUM(`waste_stock`)",
+            "displayName": "Waste Stock Units"
+          },
+          {
+            "name": "closing_stock",
+            "expr": "SUM(`closing_stock`)",
+            "displayName": "Closing Stock Units"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ops_costs",
+      "displayName": "Operating Costs",
+      "config": {
+        "version": "1.1",
+        "source": "restaurant_dev.gold.agg_ops_costs",
+        "dimensions": [
+          {
+            "name": "restaurant_id",
+            "expr": "`restaurant_id`",
+            "displayName": "Restaurant ID"
+          },
+          {
+            "name": "year_month",
+            "expr": "`year_month`",
+            "displayName": "Year Month"
+          }
+        ],
+        "measures": [
+          {
+            "name": "electricity",
+            "expr": "SUM(`electricity`)",
+            "displayName": "Electricity",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "water",
+            "expr": "SUM(`water`)",
+            "displayName": "Water",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "gas",
+            "expr": "SUM(`gas`)",
+            "displayName": "Gas",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "maintenance",
+            "expr": "SUM(`maintenance`)",
+            "displayName": "Maintenance",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "other",
+            "expr": "SUM(`other`)",
+            "displayName": "Other",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "total_cost",
+            "expr": "SUM(`total_cost`)",
+            "displayName": "Total Cost",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "revenue",
+            "expr": "SUM(`revenue`)",
+            "displayName": "Revenue",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "cost_to_revenue_pct",
+            "expr": "AVG(`cost_to_revenue_pct`)",
+            "displayName": "Cost/Revenue %",
+            "format": {
+              "type": "percentage",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          },
+          {
+            "name": "avg_wait_time_mins",
+            "expr": "AVG(`avg_wait_time_mins`)",
+            "displayName": "Avg Wait Time (min)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "avg_staff_on_shift",
+            "expr": "AVG(`avg_staff_on_shift`)",
+            "displayName": "Avg Staff Count",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "wait_times_raw",
+      "displayName": "Wait Times Raw",
+      "queryLines": [
+        "SELECT\n",
+        "  average_wait_time_mins\n",
+        "FROM\n",
+        "  fct_daily_ops\n",
+        "WHERE\n",
+        "  average_wait_time_mins IS NOT NULL"
+      ],
+      "catalog": "restaurant_dev",
+      "schema": "gold"
+    },
+    {
+      "name": "delivery_conditions",
+      "displayName": "Delivery by Conditions",
+      "config": {
+        "version": "1.1",
+        "source": "restaurant_dev.gold.agg_delivery_by_condition",
+        "dimensions": [
+          {
+            "name": "traffic_condition",
+            "expr": "traffic_condition"
+          },
+          {
+            "name": "weather_condition",
+            "expr": "weather_condition"
+          }
+        ],
+        "measures": [
+          {
+            "name": "deliveries",
+            "expr": "SUM(deliveries)"
+          },
+          {
+            "name": "avg_delivery_mins",
+            "expr": "AVG(avg_delivery_mins)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "avg_distance_miles",
+            "expr": "AVG(avg_distance_miles)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          },
+          {
+            "name": "on_time_pct",
+            "expr": "AVG(on_time_pct)",
+            "format": {
+              "type": "percentage",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "driver_performance",
+      "displayName": "Driver Performance",
+      "config": {
+        "version": "1.1",
+        "source": "restaurant_dev.gold.agg_driver_performance",
+        "dimensions": [
+          {
+            "name": "driver_id",
+            "expr": "driver_id"
+          }
+        ],
+        "measures": [
+          {
+            "name": "total_trips",
+            "expr": "SUM(total_trips)"
+          },
+          {
+            "name": "avg_delivery_mins",
+            "expr": "AVG(avg_delivery_mins)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "avg_distance_miles",
+            "expr": "AVG(avg_distance_miles)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          },
+          {
+            "name": "on_time_pct",
+            "expr": "AVG(on_time_pct)",
+            "format": {
+              "type": "percentage",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          },
+          {
+            "name": "unique_drivers",
+            "expr": "COUNT(DISTINCT driver_id)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "delivery_fact",
+      "displayName": "Delivery Fact",
+      "config": {
+        "version": "1.1",
+        "source": "restaurant_dev.gold.fct_delivery",
+        "dimensions": [
+          {
+            "name": "delivery_date",
+            "expr": "delivery_date"
+          },
+          {
+            "name": "traffic_condition",
+            "expr": "traffic_condition"
+          },
+          {
+            "name": "weather_condition",
+            "expr": "weather_condition"
+          },
+          {
+            "name": "delivery_status",
+            "expr": "delivery_status"
+          },
+          {
+            "name": "driver_id",
+            "expr": "driver_id"
+          }
+        ],
+        "measures": [
+          {
+            "name": "total_deliveries",
+            "expr": "COUNT(delivery_id)"
+          },
+          {
+            "name": "on_time_deliveries",
+            "expr": "SUM(CASE WHEN is_on_time THEN 1 ELSE 0 END)"
+          },
+          {
+            "name": "on_time_pct",
+            "expr": "SUM(CASE WHEN is_on_time THEN 1 ELSE 0 END) * 100.0 / COUNT(delivery_id)",
+            "format": {
+              "type": "percentage",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          },
+          {
+            "name": "avg_delivery_time",
+            "expr": "AVG(delivery_minutes)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "avg_distance",
+            "expr": "AVG(distance_miles)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          },
+          {
+            "name": "total_distance",
+            "expr": "SUM(distance_miles)"
+          },
+          {
+            "name": "unique_drivers",
+            "expr": "COUNT(DISTINCT driver_id)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "order_history",
+      "displayName": "Recent Order History",
+      "config": {
+        "version": "1.1",
+        "source": "restaurant_dev.gold.fct_orders",
+        "dimensions": [
+          {
+            "name": "order_date",
+            "expr": "order_date",
+            "displayName": "Order Date"
+          },
+          {
+            "name": "payment_method",
+            "expr": "payment_method",
+            "displayName": "Payment Method"
+          },
+          {
+            "name": "year_month",
+            "expr": "year_month",
+            "displayName": "Month"
+          }
+        ],
+        "measures": [
+          {
+            "name": "revenue",
+            "expr": "SUM(total_amount)",
+            "displayName": "Revenue",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "orders",
+            "expr": "COUNT(DISTINCT order_id)",
+            "displayName": "Orders"
+          },
+          {
+            "name": "avg_transaction",
+            "expr": "AVG(total_amount)",
+            "displayName": "Avg Transaction",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "best_sellers",
+      "displayName": "Best Selling Items",
+      "config": {
+        "version": "1.1",
+        "source": "SELECT \n  i.item_id,\n  i.category,\n  i.sub_category,\n  i.units_sold,\n  i.revenue,\n  i.margin,\n  i.margin_pct\nFROM restaurant_dev.gold.agg_item_performance i ORDER BY i.revenue DESC LIMIT 25\n",
+        "dimensions": [
+          {
+            "name": "item_id",
+            "expr": "item_id",
+            "displayName": "Item ID"
+          },
+          {
+            "name": "category",
+            "expr": "category",
+            "displayName": "Category"
+          },
+          {
+            "name": "sub_category",
+            "expr": "sub_category",
+            "displayName": "Sub Category"
+          }
+        ],
+        "measures": [
+          {
+            "name": "units_sold",
+            "expr": "SUM(units_sold)",
+            "displayName": "Units Sold"
+          },
+          {
+            "name": "revenue",
+            "expr": "SUM(revenue)",
+            "displayName": "Revenue",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "margin",
+            "expr": "SUM(margin)",
+            "displayName": "Margin",
+            "format": {
+              "type": "currency",
+              "currencyCode": "GBP",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "margin_pct",
+            "expr": "AVG(margin_pct)",
+            "displayName": "Margin %",
+            "format": {
+              "type": "percentage",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "pages": [
+    {
+      "name": "76144d25",
+      "displayName": "🏠 Executive",
+      "layout": [
+        {
+          "widget": {
+            "name": "financial_headline",
+            "multilineTextboxSpec": {
+              "lines": [
+                "# 📊 **FINANCIAL PERFORMANCE DASHBOARD**\n",
+                "##### _Executive Summary · YoY Analysis · Real-Time Metrics_\n",
+                "---"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_revenue_yoy",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "monthly_revenue",
+                  "fields": [
+                    {
+                      "name": "measure(revenue_prev_year)",
+                      "expression": "MEASURE(`revenue_prev_year`)"
+                    },
+                    {
+                      "name": "measure(revenue)",
+                      "expression": "MEASURE(`revenue`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "💷 Revenue"
+              },
+              "style": {
+                "fontColor": {
+                  "light": "#10B981",
+                  "dark": "#34D399"
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(revenue)"
+                },
+                "target": {
+                  "fieldName": "measure(revenue_prev_year)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_margin_yoy",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "monthly_revenue",
+                  "fields": [
+                    {
+                      "name": "measure(gross_margin_pct)",
+                      "expression": "MEASURE(`gross_margin_pct`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "📊 Gross Margin"
+              },
+              "style": {
+                "fontColor": {
+                  "light": "#8B5CF6",
+                  "dark": "#A78BFA"
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(gross_margin_pct)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 2,
+            "y": 2,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_orders_yoy",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "monthly_revenue",
+                  "fields": [
+                    {
+                      "name": "measure(total_orders_prev_year)",
+                      "expression": "MEASURE(`total_orders_prev_year`)"
+                    },
+                    {
+                      "name": "measure(total_orders)",
+                      "expression": "MEASURE(`total_orders`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "📦 Total Orders"
+              },
+              "style": {
+                "fontColor": {
+                  "light": "#3B82F6",
+                  "dark": "#60A5FA"
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(total_orders)"
+                },
+                "target": {
+                  "fieldName": "measure(total_orders_prev_year)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 2,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_aov_yoy",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "monthly_revenue",
+                  "fields": [
+                    {
+                      "name": "measure(aov_prev_year)",
+                      "expression": "MEASURE(`aov_prev_year`)"
+                    },
+                    {
+                      "name": "measure(aov)",
+                      "expression": "MEASURE(`aov`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "🛒 Avg Order Value"
+              },
+              "style": {
+                "fontColor": {
+                  "light": "#F59E0B",
+                  "dark": "#FBBF24"
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(aov)"
+                },
+                "target": {
+                  "fieldName": "measure(aov_prev_year)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 2,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_delivery_ontime",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "delivery_fact",
+                  "fields": [
+                    {
+                      "name": "measure(on_time_pct)",
+                      "expression": "MEASURE(`on_time_pct`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "🚚 Delivery On-Time"
+              },
+              "style": {
+                "fontColor": {
+                  "light": "#10B981",
+                  "dark": "#34D399"
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(on_time_pct)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 2,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_customers_yoy",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "monthly_revenue",
+                  "fields": [
+                    {
+                      "name": "measure(unique_customers_prev_year)",
+                      "expression": "MEASURE(`unique_customers_prev_year`)"
+                    },
+                    {
+                      "name": "measure(unique_customers)",
+                      "expression": "MEASURE(`unique_customers`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "👥 Customers",
+                  "fields": []
+                }
+              },
+              "style": {
+                "fontColor": {
+                  "light": "#EC4899",
+                  "dark": "#F472B6"
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(unique_customers)"
+                },
+                "target": {
+                  "fieldName": "measure(unique_customers_prev_year)",
+                  "change": {
+                    "type": "percent"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 10,
+            "y": 2,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "dual_line_revenue_yoy",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "monthly_revenue",
+                  "fields": [
+                    {
+                      "name": "year_month",
+                      "expression": "`year_month`"
+                    },
+                    {
+                      "name": "measure(revenue)",
+                      "expression": "MEASURE(`revenue`)"
+                    },
+                    {
+                      "name": "measure(revenue_prev_year)",
+                      "expression": "MEASURE(`revenue_prev_year`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "📈 Revenue Trend: Current vs Prior Year"
+              },
+              "version": 3,
+              "mark": {
+                "colors": [
+                  "#10B981",
+                  "#94A3B8"
+                ]
+              },
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "year_month",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fields": [
+                    {
+                      "fieldName": "measure(revenue)"
+                    },
+                    {
+                      "fieldName": "measure(revenue_prev_year)"
+                    }
+                  ],
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 5,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "bar_top_restaurants",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "restaurant_performance",
+                  "fields": [
+                    {
+                      "name": "measure(revenue)",
+                      "expression": "MEASURE(`revenue`)"
+                    },
+                    {
+                      "name": "restaurant_name",
+                      "expression": "`restaurant_name`"
+                    }
+                  ],
+                  "disaggregated": false,
+                  "orders": [
+                    {
+                      "direction": "ASC",
+                      "expression": "MEASURE(`revenue`)"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "🏆 Top Restaurants by Revenue"
+              },
+              "version": 3,
+              "mark": {
+                "colors": [
+                  "#8B5CF6"
+                ]
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "measure(revenue)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "restaurant_name",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "measure",
+                      "measure": {
+                        "fieldName": "measure(revenue)"
+                      }
+                    }
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 5,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "heatmap_hourly",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "hourly_demand",
+                  "fields": [
+                    {
+                      "name": "measure(orders)",
+                      "expression": "MEASURE(`orders`)"
+                    },
+                    {
+                      "name": "hour_of_day",
+                      "expression": "`hour_of_day`"
+                    },
+                    {
+                      "name": "day_of_week",
+                      "expression": "`day_of_week`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "🔥 Hourly Demand Pattern"
+              },
+              "version": 3,
+              "mark": {
+                "colors": [
+                  "#1e3a8a",
+                  "#3b82f6",
+                  "#fbbf24",
+                  "#dc2626"
+                ]
+              },
+              "widgetType": "heatmap",
+              "encodings": {
+                "x": {
+                  "fieldName": "hour_of_day",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "day_of_week",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "color": {
+                  "fieldName": "measure(orders)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 10,
+            "width": 12,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "spark_revenue",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "monthly_revenue",
+                  "fields": [
+                    {
+                      "name": "year_month",
+                      "expression": "`year_month`"
+                    },
+                    {
+                      "name": "measure(revenue)",
+                      "expression": "MEASURE(`revenue`)"
+                    }
+                  ],
+                  "disaggregated": false,
+                  "orders": [
+                    {
+                      "direction": "DESC",
+                      "expression": "`year_month`"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "📈 Revenue Sparkline"
+              },
+              "version": 2,
+              "style": {
+                "fontColor": {
+                  "light": "#10B981",
+                  "dark": "#34D399"
+                }
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(revenue)"
+                },
+                "period": {
+                  "fieldName": "year_month"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 15,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "spark_orders",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "monthly_revenue",
+                  "fields": [
+                    {
+                      "name": "year_month",
+                      "expression": "`year_month`"
+                    },
+                    {
+                      "name": "measure(total_orders)",
+                      "expression": "MEASURE(`total_orders`)"
+                    }
+                  ],
+                  "disaggregated": false,
+                  "orders": [
+                    {
+                      "direction": "DESC",
+                      "expression": "`year_month`"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "📦 Orders Sparkline"
+              },
+              "version": 2,
+              "style": {
+                "fontColor": {
+                  "light": "#3B82F6",
+                  "dark": "#60A5FA"
+                }
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(total_orders)"
+                },
+                "period": {
+                  "fieldName": "year_month"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 15,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "spark_aov",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "monthly_revenue",
+                  "fields": [
+                    {
+                      "name": "year_month",
+                      "expression": "`year_month`"
+                    },
+                    {
+                      "name": "measure(aov)",
+                      "expression": "MEASURE(`aov`)"
+                    }
+                  ],
+                  "disaggregated": false,
+                  "orders": [
+                    {
+                      "direction": "DESC",
+                      "expression": "`year_month`"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "🛒 AOV Sparkline"
+              },
+              "version": 2,
+              "style": {
+                "fontColor": {
+                  "light": "#F59E0B",
+                  "dark": "#FBBF24"
+                }
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(aov)"
+                },
+                "period": {
+                  "fieldName": "year_month"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 15,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "spark_margin",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "monthly_revenue",
+                  "fields": [
+                    {
+                      "name": "year_month",
+                      "expression": "`year_month`"
+                    },
+                    {
+                      "name": "measure(gross_margin_pct)",
+                      "expression": "MEASURE(`gross_margin_pct`)"
+                    }
+                  ],
+                  "disaggregated": false,
+                  "orders": [
+                    {
+                      "direction": "DESC",
+                      "expression": "`year_month`"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "📉 Margin % Sparkline"
+              },
+              "version": 2,
+              "style": {
+                "fontColor": {
+                  "light": "#8B5CF6",
+                  "dark": "#A78BFA"
+                }
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(gross_margin_pct)"
+                },
+                "period": {
+                  "fieldName": "year_month"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 9,
+            "y": 15,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "table_payment_trends",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "order_history",
+                  "fields": [
+                    {
+                      "name": "payment_method",
+                      "expression": "`payment_method`"
+                    },
+                    {
+                      "name": "measure(revenue)",
+                      "expression": "MEASURE(`revenue`)"
+                    },
+                    {
+                      "name": "measure(orders)",
+                      "expression": "MEASURE(`orders`)"
+                    },
+                    {
+                      "name": "measure(avg_transaction)",
+                      "expression": "MEASURE(`avg_transaction`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "💳 Payment Method Breakdown"
+              },
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "payment_method"
+                  },
+                  {
+                    "fieldName": "measure(revenue)"
+                  },
+                  {
+                    "fieldName": "measure(orders)"
+                  },
+                  {
+                    "fieldName": "measure(avg_transaction)"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 18,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "bar_best_sellers",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "best_sellers",
+                  "fields": [
+                    {
+                      "name": "measure(revenue)",
+                      "expression": "MEASURE(`revenue`)"
+                    },
+                    {
+                      "name": "category",
+                      "expression": "`category`"
+                    }
+                  ],
+                  "disaggregated": false,
+                  "orders": [
+                    {
+                      "direction": "ASC",
+                      "expression": "MEASURE(`revenue`)"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "🍽️ Top 25 Best Sellers"
+              },
+              "version": 3,
+              "mark": {
+                "colors": [
+                  "#F59E0B"
+                ]
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "measure(revenue)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "category",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "measure",
+                      "measure": {
+                        "fieldName": "measure(revenue)"
+                      }
+                    }
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 18,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "line_orders_daily",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "order_history",
+                  "fields": [
+                    {
+                      "name": "order_date",
+                      "expression": "`order_date`"
+                    },
+                    {
+                      "name": "measure(orders)",
+                      "expression": "MEASURE(`orders`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "📊 Daily Order Volume"
+              },
+              "version": 3,
+              "mark": {
+                "colors": [
+                  "#3B82F6"
+                ]
+              },
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "order_date",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(orders)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 23,
+            "width": 12,
+            "height": 5
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "sales_analytics",
+      "displayName": "💳 Sales Analytics",
+      "layout": [
+        {
+          "widget": {
+            "name": "title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "# 💳 **SALES PERFORMANCE ANALYTICS**\n",
+                "##### _Jan 2024 → Dec 2025_\n",
+                "---"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 8,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "date_filter",
+            "queries": [
+              {
+                "name": "dashboards/01f1aee40f1d18ebb532a67cea24d400/datasets/01f1aeef202e1410b7b50d48e6831410_order_date",
+                "query": {
+                  "datasetName": "order_details",
+                  "fields": [
+                    {
+                      "name": "order_date",
+                      "expression": "`order_date`"
+                    },
+                    {
+                      "name": "order_date_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": "📅 Date Range"
+              },
+              "widgetType": "filter-date-range-picker",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "order_date",
+                    "queryName": "dashboards/01f1aee40f1d18ebb532a67cea24d400/datasets/01f1aeef202e1410b7b50d48e6831410_order_date"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 0,
+            "width": 4,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "combo_revenue_orders",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "sales_monthly",
+                  "fields": [
+                    {
+                      "name": "year_month",
+                      "expression": "`year_month`"
+                    },
+                    {
+                      "name": "measure(revenue)",
+                      "expression": "MEASURE(`revenue`)"
+                    },
+                    {
+                      "name": "measure(total_orders)",
+                      "expression": "MEASURE(`total_orders`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "📈 Revenue & Orders Trend"
+              },
+              "version": 1,
+              "mark": {
+                "colors": [
+                  "#10B981",
+                  "#3B82F6"
+                ]
+              },
+              "widgetType": "combo",
+              "encodings": {
+                "x": {
+                  "fieldName": "year_month",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "primary": {
+                    "fields": [
+                      {
+                        "fieldName": "measure(revenue)"
+                      }
+                    ]
+                  },
+                  "secondary": {
+                    "fields": [
+                      {
+                        "fieldName": "measure(total_orders)"
+                      }
+                    ]
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "donut_category",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "sales_by_category",
+                  "fields": [
+                    {
+                      "name": "measure(revenue)",
+                      "expression": "MEASURE(`revenue`)"
+                    },
+                    {
+                      "name": "category",
+                      "expression": "`category`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "🍩 Revenue by Category"
+              },
+              "version": 3,
+              "mark": {
+                "colors": [
+                  "#10B981",
+                  "#3B82F6",
+                  "#8B5CF6",
+                  "#F59E0B",
+                  "#EF4444",
+                  "#EC4899",
+                  "#14B8A6"
+                ]
+              },
+              "widgetType": "pie",
+              "encodings": {
+                "angle": {
+                  "fieldName": "measure(revenue)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "category",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 2,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "hbar_restaurant",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "sales_by_restaurant",
+                  "fields": [
+                    {
+                      "name": "measure(revenue)",
+                      "expression": "MEASURE(`revenue`)"
+                    },
+                    {
+                      "name": "restaurant_name",
+                      "expression": "`restaurant_name`"
+                    }
+                  ],
+                  "disaggregated": false,
+                  "orders": [
+                    {
+                      "direction": "ASC",
+                      "expression": "MEASURE(`revenue`)"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "🏪 Top Restaurants"
+              },
+              "version": 3,
+              "mark": {
+                "colors": [
+                  "#10B981"
+                ]
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "measure(revenue)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "restaurant_name",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "measure",
+                      "measure": {
+                        "fieldName": "measure(revenue)"
+                      }
+                    }
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 7,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "payment_trend",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "order_details",
+                  "fields": [
+                    {
+                      "name": "payment_method",
+                      "expression": "`payment_method`"
+                    },
+                    {
+                      "name": "order_date",
+                      "expression": "`order_date`"
+                    },
+                    {
+                      "name": "measure(revenue)",
+                      "expression": "MEASURE(`revenue`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "💳 Payment Method Trends",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "mark": {
+                "colors": [
+                  "#10B981",
+                  "#3B82F6",
+                  "#8B5CF6",
+                  "#F59E0B"
+                ]
+              },
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "order_date",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(revenue)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "payment_method",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 12,
+            "width": 12,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "orders_table",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "order_details",
+                  "fields": [
+                    {
+                      "name": "order_id",
+                      "expression": "`order_id`"
+                    },
+                    {
+                      "name": "order_date",
+                      "expression": "`order_date`"
+                    },
+                    {
+                      "name": "payment_method",
+                      "expression": "`payment_method`"
+                    },
+                    {
+                      "name": "measure(revenue)",
+                      "expression": "MEASURE(`revenue`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "📋 Order Details"
+              },
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "order_id",
+                    "useForSearch": true
+                  },
+                  {
+                    "fieldName": "order_date"
+                  },
+                  {
+                    "fieldName": "payment_method",
+                    "useForSearch": true
+                  },
+                  {
+                    "fieldName": "measure(revenue)"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 17,
+            "width": 12,
+            "height": 6
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "customers",
+      "displayName": "👥 Customer Analytics",
+      "layout": [
+        {
+          "widget": {
+            "name": "title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "# 👥 **CUSTOMER ANALYTICS**\n",
+                "##### _Jan 2024 → Dec 2025 · RFM Segmentation & Lifetime Value_\n",
+                "---"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 8,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "donut_segment",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "customer_lifetime",
+                  "fields": [
+                    {
+                      "name": "measure(customers)",
+                      "expression": "MEASURE(`customers`)"
+                    },
+                    {
+                      "name": "rfm_segment",
+                      "expression": "`rfm_segment`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "🍩 Customer Segments"
+              },
+              "version": 3,
+              "mark": {
+                "colors": [
+                  "#10B981",
+                  "#3B82F6",
+                  "#8B5CF6",
+                  "#F59E0B",
+                  "#EF4444"
+                ]
+              },
+              "widgetType": "pie",
+              "encodings": {
+                "angle": {
+                  "fieldName": "measure(customers)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "rfm_segment",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "scatter_clv",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "customer_dimension",
+                  "fields": [
+                    {
+                      "name": "rfm_segment",
+                      "expression": "`rfm_segment`"
+                    },
+                    {
+                      "name": "measure(total_orders)",
+                      "expression": "MEASURE(`total_orders`)"
+                    },
+                    {
+                      "name": "measure(customer_lifetime_value)",
+                      "expression": "MEASURE(`customer_lifetime_value`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "💰 CLV vs Order Count"
+              },
+              "version": 3,
+              "mark": {
+                "colors": [
+                  "#10B981",
+                  "#3B82F6",
+                  "#8B5CF6",
+                  "#F59E0B",
+                  "#EF4444"
+                ],
+                "size": 0
+              },
+              "widgetType": "scatter",
+              "encodings": {
+                "x": {
+                  "fieldName": "measure(total_orders)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(customer_lifetime_value)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "rfm_segment",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 2,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "histogram_clv",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "customer_lifetime",
+                  "fields": [
+                    {
+                      "name": "customer_segment",
+                      "expression": "`customer_segment`"
+                    },
+                    {
+                      "name": "measure(avg_clv)",
+                      "expression": "MEASURE(`avg_clv`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "📊 CLV Distribution"
+              },
+              "version": 3,
+              "mark": {
+                "colors": [
+                  "#10B981"
+                ]
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "customer_segment",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(avg_clv)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 7,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "leaderboard_table",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "customer_dimension",
+                  "fields": [
+                    {
+                      "name": "full_name",
+                      "expression": "`full_name`"
+                    },
+                    {
+                      "name": "rfm_segment",
+                      "expression": "`rfm_segment`"
+                    },
+                    {
+                      "name": "measure(customer_lifetime_value)",
+                      "expression": "MEASURE(`customer_lifetime_value`)"
+                    },
+                    {
+                      "name": "measure(total_orders)",
+                      "expression": "MEASURE(`total_orders`)"
+                    },
+                    {
+                      "name": "measure(avg_order_value)",
+                      "expression": "MEASURE(`avg_order_value`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "🏆 Customer Leaderboard"
+              },
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "full_name",
+                    "useForSearch": true
+                  },
+                  {
+                    "fieldName": "rfm_segment"
+                  },
+                  {
+                    "fieldName": "measure(customer_lifetime_value)"
+                  },
+                  {
+                    "fieldName": "measure(total_orders)"
+                  },
+                  {
+                    "fieldName": "measure(avg_order_value)"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 7,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "date_filter_fixed",
+            "queries": [
+              {
+                "name": "dashboards/01f1aee40f1d18ebb532a67cea24d400/datasets/01f1aeefcf331dc19e265770b2f3844b_join_date",
+                "query": {
+                  "datasetName": "customer_dimension",
+                  "fields": [
+                    {
+                      "name": "join_date",
+                      "expression": "`join_date`"
+                    },
+                    {
+                      "name": "join_date_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": "📅 Join Date Range"
+              },
+              "widgetType": "filter-date-range-picker",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "join_date",
+                    "queryName": "dashboards/01f1aee40f1d18ebb532a67cea24d400/datasets/01f1aeefcf331dc19e265770b2f3844b_join_date"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 0,
+            "width": 4,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "cohort_heatmap_fixed",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "customer_cohorts",
+                  "fields": [
+                    {
+                      "name": "measure(active_customers)",
+                      "expression": "MEASURE(`active_customers`)"
+                    },
+                    {
+                      "name": "months_since_join",
+                      "expression": "`months_since_join`"
+                    },
+                    {
+                      "name": "cohort_month",
+                      "expression": "`cohort_month`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "🔥 Cohort Retention Heatmap"
+              },
+              "version": 3,
+              "widgetType": "heatmap",
+              "encodings": {
+                "x": {
+                  "fieldName": "months_since_join",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "cohort_month",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "color": {
+                  "fieldName": "measure(active_customers)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 12,
+            "width": 12,
+            "height": 6
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "menu",
+      "displayName": "🍔 Menu Performance",
+      "layout": [
+        {
+          "widget": {
+            "name": "title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "# 🍔 **MENU PERFORMANCE**\n",
+                "##### _YTD 2025 · All Restaurants · All Categories_\n",
+                "---"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_items",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "menu_items",
+                  "fields": [
+                    {
+                      "name": "measure(active_items)",
+                      "expression": "MEASURE(`active_items`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "📋 Active Items"
+              },
+              "version": 2,
+              "style": {
+                "fontColor": {
+                  "light": "#10B981",
+                  "dark": "#34D399"
+                }
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(active_items)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_margin",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "menu_items",
+                  "fields": [
+                    {
+                      "name": "measure(gross_margin_pct)",
+                      "expression": "MEASURE(`gross_margin_pct`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "💹 Avg Margin %"
+              },
+              "version": 2,
+              "style": {
+                "fontColor": {
+                  "light": "#F59E0B",
+                  "dark": "#FBBF24"
+                }
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(gross_margin_pct)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 2,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_units",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "item_performance",
+                  "fields": [
+                    {
+                      "name": "measure(units_sold)",
+                      "expression": "MEASURE(`units_sold`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "📦 Total Units"
+              },
+              "version": 2,
+              "style": {
+                "fontColor": {
+                  "light": "#3B82F6",
+                  "dark": "#60A5FA"
+                }
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(units_sold)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 2,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_revenue",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "item_performance",
+                  "fields": [
+                    {
+                      "name": "measure(revenue)",
+                      "expression": "MEASURE(`revenue`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "💰 Total Revenue"
+              },
+              "version": 2,
+              "style": {
+                "fontColor": {
+                  "light": "#8B5CF6",
+                  "dark": "#A78BFA"
+                }
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(revenue)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 9,
+            "y": 2,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "pie_category",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "item_performance",
+                  "fields": [
+                    {
+                      "name": "measure(revenue)",
+                      "expression": "MEASURE(`revenue`)"
+                    },
+                    {
+                      "name": "category",
+                      "expression": "`category`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "🍕 Revenue by Category"
+              },
+              "version": 3,
+              "mark": {
+                "colors": [
+                  "#10B981",
+                  "#3B82F6",
+                  "#8B5CF6",
+                  "#F59E0B",
+                  "#EF4444",
+                  "#EC4899"
+                ]
+              },
+              "widgetType": "pie",
+              "encodings": {
+                "angle": {
+                  "fieldName": "measure(revenue)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "category",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 5,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "scatter_price_margin",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "item_performance",
+                  "fields": [
+                    {
+                      "name": "category",
+                      "expression": "`category`"
+                    },
+                    {
+                      "name": "measure(avg_price)",
+                      "expression": "MEASURE(`avg_price`)"
+                    },
+                    {
+                      "name": "measure(margin_pct)",
+                      "expression": "MEASURE(`margin_pct`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "📊 Price vs Margin Analysis"
+              },
+              "version": 3,
+              "mark": {
+                "colors": [
+                  "#10B981",
+                  "#3B82F6",
+                  "#8B5CF6",
+                  "#F59E0B",
+                  "#EF4444"
+                ],
+                "size": 1
+              },
+              "widgetType": "scatter",
+              "encodings": {
+                "x": {
+                  "fieldName": "measure(avg_price)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(margin_pct)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "category",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 5,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "table_performance",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "item_performance",
+                  "fields": [
+                    {
+                      "name": "item_name",
+                      "expression": "`item_name`"
+                    },
+                    {
+                      "name": "category",
+                      "expression": "`category`"
+                    },
+                    {
+                      "name": "measure(revenue)",
+                      "expression": "MEASURE(`revenue`)"
+                    },
+                    {
+                      "name": "measure(units_sold)",
+                      "expression": "MEASURE(`units_sold`)"
+                    },
+                    {
+                      "name": "measure(margin_pct)",
+                      "expression": "MEASURE(`margin_pct`)"
+                    },
+                    {
+                      "name": "measure(avg_price)",
+                      "expression": "MEASURE(`avg_price`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "📋 Item Performance Leaderboard"
+              },
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "item_name",
+                    "useForSearch": true
+                  },
+                  {
+                    "fieldName": "category"
+                  },
+                  {
+                    "fieldName": "measure(revenue)"
+                  },
+                  {
+                    "fieldName": "measure(units_sold)"
+                  },
+                  {
+                    "fieldName": "measure(margin_pct)"
+                  },
+                  {
+                    "fieldName": "measure(avg_price)"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 17,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "bar_top_items_fixed",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "item_performance",
+                  "fields": [
+                    {
+                      "name": "measure(revenue)",
+                      "expression": "MEASURE(`revenue`)"
+                    },
+                    {
+                      "name": "item_name",
+                      "expression": "`item_name`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "🏆 Top Items by Revenue",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "mark": {
+                "colors": [
+                  "#8B5CF6"
+                ]
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "measure(revenue)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "item_name",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 11,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "scatter_engineering_fixed",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "menu_engineering",
+                  "fields": [
+                    {
+                      "name": "classification",
+                      "expression": "`classification`"
+                    },
+                    {
+                      "name": "measure(units_sold)",
+                      "expression": "MEASURE(`units_sold`)"
+                    },
+                    {
+                      "name": "measure(gross_margin_pct)",
+                      "expression": "MEASURE(`gross_margin_pct`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "🎯 Menu Engineering Matrix"
+              },
+              "version": 3,
+              "mark": {
+                "colors": [
+                  "#10B981",
+                  "#F59E0B",
+                  "#3B82F6",
+                  "#EF4444"
+                ],
+                "size": 2
+              },
+              "widgetType": "scatter",
+              "encodings": {
+                "x": {
+                  "fieldName": "measure(units_sold)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(gross_margin_pct)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "classification",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 11,
+            "width": 6,
+            "height": 6
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "operations",
+      "displayName": "⚙️ Operations & Inventory",
+      "layout": [
+        {
+          "widget": {
+            "name": "title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "# ⚙️ **OPERATIONS & INVENTORY**\n",
+                "##### _YTD 2025 · All Locations · Real-Time Ops_\n",
+                "---"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_stock",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "inventory",
+                  "fields": [
+                    {
+                      "name": "measure(stock_value)",
+                      "expression": "MEASURE(`stock_value`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "📦 Stock Value"
+              },
+              "style": {
+                "fontColor": {
+                  "light": "#3B82F6",
+                  "dark": "#60A5FA"
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(stock_value)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_waste",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "inventory",
+                  "fields": [
+                    {
+                      "name": "measure(avg_waste_pct)",
+                      "expression": "MEASURE(`avg_waste_pct`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "🗑️ Waste %"
+              },
+              "style": {
+                "fontColor": {
+                  "light": "#EF4444",
+                  "dark": "#F87171"
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(avg_waste_pct)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 2,
+            "y": 2,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_wait",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ops_costs",
+                  "fields": [
+                    {
+                      "name": "measure(avg_wait_time_mins)",
+                      "expression": "MEASURE(`avg_wait_time_mins`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "⏱️ Avg Wait"
+              },
+              "style": {
+                "fontColor": {
+                  "light": "#F59E0B",
+                  "dark": "#FBBF24"
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(avg_wait_time_mins)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 2,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_staff",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "staffing",
+                  "fields": [
+                    {
+                      "name": "measure(active_headcount)",
+                      "expression": "MEASURE(`active_headcount`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "👥 Staff Count"
+              },
+              "style": {
+                "fontColor": {
+                  "light": "#8B5CF6",
+                  "dark": "#A78BFA"
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(active_headcount)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 2,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_cost_rev",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ops_costs",
+                  "fields": [
+                    {
+                      "name": "measure(cost_to_revenue_pct)",
+                      "expression": "MEASURE(`cost_to_revenue_pct`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "💰 Cost/Rev %"
+              },
+              "style": {
+                "fontColor": {
+                  "light": "#10B981",
+                  "dark": "#34D399"
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(cost_to_revenue_pct)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 9,
+            "y": 2,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "table_staffing",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "staffing",
+                  "fields": [
+                    {
+                      "name": "position",
+                      "expression": "`position`"
+                    },
+                    {
+                      "name": "measure(headcount)",
+                      "expression": "MEASURE(`headcount`)"
+                    },
+                    {
+                      "name": "measure(active_headcount)",
+                      "expression": "MEASURE(`active_headcount`)"
+                    },
+                    {
+                      "name": "measure(avg_hourly_rate)",
+                      "expression": "MEASURE(`avg_hourly_rate`)"
+                    },
+                    {
+                      "name": "measure(weekly_payroll)",
+                      "expression": "MEASURE(`weekly_payroll`)"
+                    },
+                    {
+                      "name": "measure(turnover_pct)",
+                      "expression": "MEASURE(`turnover_pct`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "👥 Staffing Details"
+              },
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "position"
+                  },
+                  {
+                    "fieldName": "measure(headcount)"
+                  },
+                  {
+                    "fieldName": "measure(active_headcount)"
+                  },
+                  {
+                    "fieldName": "measure(avg_hourly_rate)"
+                  },
+                  {
+                    "fieldName": "measure(weekly_payroll)"
+                  },
+                  {
+                    "fieldName": "measure(turnover_pct)"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 5,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "area_costs",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ops_costs",
+                  "fields": [
+                    {
+                      "name": "year_month",
+                      "expression": "`year_month`"
+                    },
+                    {
+                      "name": "measure(electricity)",
+                      "expression": "MEASURE(`electricity`)"
+                    },
+                    {
+                      "name": "measure(water)",
+                      "expression": "MEASURE(`water`)"
+                    },
+                    {
+                      "name": "measure(gas)",
+                      "expression": "MEASURE(`gas`)"
+                    },
+                    {
+                      "name": "measure(maintenance)",
+                      "expression": "MEASURE(`maintenance`)"
+                    },
+                    {
+                      "name": "measure(other)",
+                      "expression": "MEASURE(`other`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "💸 Operating Costs Over Time"
+              },
+              "version": 3,
+              "mark": {
+                "layout": "stack"
+              },
+              "widgetType": "area",
+              "encodings": {
+                "x": {
+                  "fieldName": "year_month",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "fields": [
+                    {
+                      "fieldName": "measure(electricity)"
+                    },
+                    {
+                      "fieldName": "measure(water)"
+                    },
+                    {
+                      "fieldName": "measure(gas)"
+                    },
+                    {
+                      "fieldName": "measure(maintenance)"
+                    },
+                    {
+                      "fieldName": "measure(other)"
+                    }
+                  ],
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "GBP",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 0
+                    }
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 11,
+            "width": 8,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "bar_metrics",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ops_costs",
+                  "fields": [
+                    {
+                      "name": "measure(revenue)",
+                      "expression": "MEASURE(`revenue`)"
+                    },
+                    {
+                      "name": "year_month",
+                      "expression": "`year_month`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "📊 Monthly Revenue"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "measure(revenue)",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "GBP",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 0
+                    }
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "year_month",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 11,
+            "width": 4,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "heatmap_ops",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "daily_ops",
+                  "fields": [
+                    {
+                      "name": "measure(daily_revenue)",
+                      "expression": "MEASURE(`daily_revenue`)"
+                    },
+                    {
+                      "name": "year_month",
+                      "expression": "`year_month`"
+                    },
+                    {
+                      "name": "restaurant_id",
+                      "expression": "`restaurant_id`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "🔥 Ops Performance Heatmap"
+              },
+              "version": 3,
+              "widgetType": "heatmap",
+              "encodings": {
+                "x": {
+                  "fieldName": "year_month",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "fieldName": "restaurant_id",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "color": {
+                  "fieldName": "measure(daily_revenue)",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "GBP",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 0
+                    }
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 16,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "histogram_wait",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "wait_times_raw",
+                  "fields": [
+                    {
+                      "name": "average_wait_time_mins",
+                      "expression": "`average_wait_time_mins`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "⏱️ Wait Time Distribution"
+              },
+              "version": 3,
+              "widgetType": "histogram",
+              "encodings": {
+                "x": {
+                  "fieldName": "average_wait_time_mins",
+                  "format": {
+                    "type": "number-plain",
+                    "abbreviation": "none",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 1
+                    }
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 16,
+            "width": 6,
+            "height": 5
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "delivery",
+      "displayName": "🚚 Delivery & Logistics",
+      "layout": [
+        {
+          "widget": {
+            "name": "title",
+            "multilineTextboxSpec": {
+              "lines": [
+                "# 🚚 **DELIVERY & LOGISTICS**\n",
+                "##### _On-Time Performance · Driver Metrics · Route Efficiency_\n",
+                "---"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_ontime",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "delivery_fact",
+                  "fields": [
+                    {
+                      "name": "measure(on_time_pct)",
+                      "expression": "MEASURE(`on_time_pct`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "✅ On-Time %"
+              },
+              "version": 2,
+              "style": {
+                "fontColor": {
+                  "light": "#10B981",
+                  "dark": "#34D399"
+                }
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(on_time_pct)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_avgtime",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "delivery_fact",
+                  "fields": [
+                    {
+                      "name": "measure(avg_delivery_time)",
+                      "expression": "MEASURE(`avg_delivery_time`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "⏱️ Avg Time"
+              },
+              "version": 2,
+              "style": {
+                "fontColor": {
+                  "light": "#F59E0B",
+                  "dark": "#FBBF24"
+                }
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(avg_delivery_time)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 2,
+            "y": 2,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_drivers",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "driver_performance",
+                  "fields": [
+                    {
+                      "name": "measure(unique_drivers)",
+                      "expression": "MEASURE(`unique_drivers`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "👥 Drivers"
+              },
+              "version": 2,
+              "style": {
+                "fontColor": {
+                  "light": "#8B5CF6",
+                  "dark": "#A78BFA"
+                }
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(unique_drivers)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 2,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_avgdist",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "delivery_fact",
+                  "fields": [
+                    {
+                      "name": "measure(avg_distance)",
+                      "expression": "MEASURE(`avg_distance`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "📍 Avg Distance"
+              },
+              "version": 2,
+              "style": {
+                "fontColor": {
+                  "light": "#3B82F6",
+                  "dark": "#60A5FA"
+                }
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(avg_distance)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 2,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "bar_traffic",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "delivery_conditions",
+                  "fields": [
+                    {
+                      "name": "measure(deliveries)",
+                      "expression": "MEASURE(`deliveries`)"
+                    },
+                    {
+                      "name": "traffic_condition",
+                      "expression": "`traffic_condition`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "🚗 Deliveries by Traffic Condition"
+              },
+              "version": 3,
+              "mark": {
+                "colors": [
+                  "#10B981"
+                ]
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "measure(deliveries)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "traffic_condition",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 5,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "scatter_dist_time",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "delivery_conditions",
+                  "fields": [
+                    {
+                      "name": "weather_condition",
+                      "expression": "`weather_condition`"
+                    },
+                    {
+                      "name": "measure(avg_distance_miles)",
+                      "expression": "MEASURE(`avg_distance_miles`)"
+                    },
+                    {
+                      "name": "measure(avg_delivery_mins)",
+                      "expression": "MEASURE(`avg_delivery_mins`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "📍 Distance vs Delivery Time"
+              },
+              "version": 3,
+              "mark": {
+                "colors": [
+                  "#3B82F6",
+                  "#10B981",
+                  "#F59E0B",
+                  "#EF4444"
+                ],
+                "size": 2
+              },
+              "widgetType": "scatter",
+              "encodings": {
+                "x": {
+                  "fieldName": "measure(avg_distance_miles)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(avg_delivery_mins)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "weather_condition",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 5,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "table_driver_leaderboard",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "driver_performance",
+                  "fields": [
+                    {
+                      "name": "driver_id",
+                      "expression": "`driver_id`"
+                    },
+                    {
+                      "name": "measure(total_trips)",
+                      "expression": "MEASURE(`total_trips`)"
+                    },
+                    {
+                      "name": "measure(on_time_pct)",
+                      "expression": "MEASURE(`on_time_pct`)"
+                    },
+                    {
+                      "name": "measure(avg_delivery_mins)",
+                      "expression": "MEASURE(`avg_delivery_mins`)"
+                    },
+                    {
+                      "name": "measure(avg_distance_miles)",
+                      "expression": "MEASURE(`avg_distance_miles`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "🏆 Driver Performance Leaderboard"
+              },
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "driver_id",
+                    "useForSearch": true
+                  },
+                  {
+                    "fieldName": "measure(total_trips)"
+                  },
+                  {
+                    "fieldName": "measure(on_time_pct)"
+                  },
+                  {
+                    "fieldName": "measure(avg_delivery_mins)"
+                  },
+                  {
+                    "fieldName": "measure(avg_distance_miles)"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 10,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "area_deliveries_time",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "delivery_fact",
+                  "fields": [
+                    {
+                      "name": "delivery_date",
+                      "expression": "`delivery_date`"
+                    },
+                    {
+                      "name": "measure(total_deliveries)",
+                      "expression": "MEASURE(`total_deliveries`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "📈 Deliveries Over Time",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "mark": {
+                "colors": [
+                  "#10B981"
+                ],
+                "layout": "stack"
+              },
+              "widgetType": "area",
+              "encodings": {
+                "x": {
+                  "fieldName": "delivery_date",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(total_deliveries)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 16,
+            "width": 9,
+            "height": 6
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "canvasBackgroundColor": {
+        "light": "#F8F9FA",
+        "dark": "#1A1D21"
+      },
+      "widgetBackgroundColor": {
+        "light": "#FFFFFF",
+        "dark": "#242830"
+      },
+      "fontColor": {
+        "light": "#11171C",
+        "dark": "#E8ECF0"
+      },
+      "selectionColor": {
+        "light": "#2272B4",
+        "dark": "#8ACAFF"
+      },
+      "visualizationColors": [
+        "#E8590C",
+        "#FF8C42",
+        "#FFD93D",
+        "#6BCF7F",
+        "#4A90E2",
+        "#9B59B6",
+        "#E74C3C",
+        "#1ABC9C",
+        "#F39C12",
+        "#34495E"
+      ],
+      "widgetHeaderAlignment": "LEFT",
+      "textBoxVerticalAlign": "VERTICAL_ALIGN_TOP",
+      "widgetPadding": 16,
+      "widgetMargin": 12,
+      "widgetCornerRadius": 8,
+      "fontSettings": {
+        "base": {
+          "fontFamily": "Inter",
+          "fontSize": 14
+        },
+        "widgetTitle": {
+          "fontFamily": "Inter",
+          "fontSize": 16,
+          "fontWeight": 600
+        }
+      }
+    },
+    "applyModeEnabled": false
+  }
+}
